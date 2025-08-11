@@ -7,9 +7,6 @@ EVNAlpha board;
 TFLI2C rightSensor;
 TFLI2C leftSensor;
 
-
-
-
 bool read_right_tof = true;
 
 byte tof_message_state = 0;
@@ -29,13 +26,15 @@ int temp;
 #define DTOR(a) (float)a * PI / 180.0 
 
 #define CORRECTED_DISTANCE(d) d * cos(DTOR(snapped_heading))
+#include <SoftwareSerial.h>
+SoftwareSerial camSerial(11,10);
 
 void setup() {
   // put your setup code here, to run once:  
   Serial.begin(921600);
   //Serial.begin(9600);
   Serial.println("Initializing...");
-
+  camSerial.begin(115200);
   board.begin();
   board.setPort(9);
 
@@ -71,7 +70,9 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-
+  while (camSerial.available()) {
+    cam_state = camSerial.read() - '0';
+  }
   // READ COMPASS
   if (Wire1.requestFrom(0x3B, 2) == 2) {
     while (Wire1.available() < 2)
@@ -204,6 +205,9 @@ void loop() {
 
     Serial.print(pulseCount);
     Serial.print("p\t");
+    
+    Serial.print(cam_state);
+    Serial.print("c\t");
 
     Serial.println();
     last_print_millis = millis();
